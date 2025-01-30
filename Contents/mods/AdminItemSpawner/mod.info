@@ -1,0 +1,7 @@
+name=[B41] Admin Item Spawner [DEV Branch]
+poster=poster.png
+id=AdminItemSpawner_DEV
+description=
+require=ElyonLib,StarlitLibrary
+tags=Build 41,Misc,Multiplayer,Interface
+versionMin=41.0

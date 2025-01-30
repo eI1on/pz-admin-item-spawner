@@ -1,0 +1,66 @@
+version=1
+id=3415883119
+title=[B41] Admin Item Spawner [DEV Branch]
+description=[h1]Admin Item Spawner [DEV Branch][/h1]
+description=A powerful admin tool that allows for item spawning with multiple spawn modes.
+description=
+description=[h2]Features[/h2]
+description=[list]
+description=[*][b]Multiple Spawn Modes[/b]: Choose between Local (radius-based), Global (world spawn), or Player-targeted spawning
+description=[*][b]Local Radius System[/b]: Spawn items to all players within a specified radius from selected coordinates
+description=[*][b]Multi-Item Support[/b]: Spawn multiple items at once using a simple syntax (Module.ItemType=Amount)
+description=[*][b]Visual Selection[/b]: Red circle marker shows the affected radius for local spawning
+description=[*][b]Player Targeting[/b]: Option to spawn items to a specific player
+description=[*][b]Easy Access[/b]: Available through the Admin Panel, Debug Menu, and right-click context menu (in SP)
+description=[/list]
+description=
+description=[h2]How to Use[/h2]
+description=[list]
+description=[*]Access through Admin Panel, Debug Menu (admin privileges required)
+description=[*]Select spawn mode:
+description=[list]
+description=[*]Local: Items spawn to all players within specified radius
+description=[*]Global: Items spawn to all players on the server
+description=[*]Player: Items spawn to selected player only
+description=[/list]
+description=[*]For local mode:
+description=[list]
+description=[*]Choose center coordinates using "Pick Square"
+description=[*]Set radius to determine which players receive items
+description=[/list]
+description=[*]For player mode:
+description=[list]
+description=[*]Select target player from the list
+description=[/list]
+description=[*]Enter items in the format: "Module.ItemType=Amount" (one per line or separated by ";" for multiple per line)
+description=[*]For player mode, select target player from the list
+description=[*]Click Spawn to execute
+description=[/list]
+description=
+description=[h2]Item Format Examples[/h2]
+description=[code]
+description=Base.Axe=1;Base.Acorn;
+description=Base.Hammer=5;Base.SheetPaper=1;
+description=Base.Nails=10
+description=[/code]
+description=
+description=[h2]Compatibility[/h2]
+description=[list]
+description=[*]Works in both singleplayer and multiplayer
+description=[*]Requires admin privileges in multiplayer
+description=[/list]
+description=
+description=[i][b]Note:[/b] This is the developer branch of the mod, which may include bugs or experimental features.[/i]
+description=[i]The mod's functionality may be subject to change in future updates.[/i]
+description=
+description=[hr][/hr]
+description=[url=https://discord.gg/asA9BuAasd] [img] https://raw.githubusercontent.com/eI1on/workshop_resources/main/workshop_images/Workshop_Desc_PZ_Modding_Disc.png [/img] [/url]
+description=[img] https://imgur.com/eZp8dXD.png [/img]
+description=[url=https://github.com/eI1on/pz-admin-item-spawner][img] https://raw.githubusercontent.com/eI1on/workshop_resources/main/workshop_images/Workshop_Desc_Github_Banner.png [/img][/url][url=https://ko-fi.com/ely0n][img] https://raw.githubusercontent.com/eI1on/workshop_resources/main/workshop_images/Workshop_Desc_Kofi.png [/img][/url]
+description=[quote=author]
+description=This mod's permissions fall under TIS's policy [url=https://theindiestone.com/forums/index.php?/topic/2530-mod-permissions/] On Lockdown [/url]
+description=This mod cannot be modified by anyone else, for anything else, at all, ever. Even if the user disappears, they would much rather you didn't touch the fruits of their hard labour.
+description=[/quote]
+description=[url=http://theindiestone.com/forums/index.php/topic/2530-mod-permissions/?p=36479][img] https://raw.githubusercontent.com/eI1on/workshop_resources/main/mod_permissions_images/on_lockdown.png [/img][/url]
+tags=Build 41;Interface;Items;Map;Misc;Multiplayer
+visibility=unlisted

@@ -1,0 +1,5 @@
+Tooltip_EN = {
+
+    Tooltip_AIS_SpawnModeGroup = "Local Spawn: Spawns items within specified radius from selected point. Only players in range will receive items. <LINE> <LINE> Global Spawn: Spawns items for every player on the server, regardless of their location on the map. <LINE> <LINE> Target Player: Spawns items directly into the selected player's inventory. Works at any distance.",
+
+}

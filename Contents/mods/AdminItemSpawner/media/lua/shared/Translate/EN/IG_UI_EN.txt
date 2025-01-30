@@ -1,0 +1,18 @@
+IGUI_EN = {
+
+    IGUI_AIS_AdminItemSpawnerManager = "Admin Item Spawner Manager",
+    IGUI_AIS_Coordinates = "Coordinates",
+    IGUI_AIS_PickSquare = "Pick Square",
+    IGUI_AIS_GlobalSpawn = "Global Spawn",
+    IGUI_AIS_Radius = "Radius",
+    IGUI_AIS_ItemsList = "Items List",
+    IGUI_AIS_Spawn = "Spawn",
+    IGUI_AIS_Cancel = "Cancel",
+
+    IGUI_AIS_SpawnLocal = "Local Spawn (Within Radius)",
+    IGUI_AIS_SpawnGlobal = "Global Spawn (All Players)",
+    IGUI_AIS_SpawnToPlayer = "Target Player",
+    IGUI_AIS_PlayerList1 = "TARGET PLAYER",
+    IGUI_AIS_PlayerList2 = "(Select a player to receive the items)",
+
+}
