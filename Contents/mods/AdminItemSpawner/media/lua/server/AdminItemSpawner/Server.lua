@@ -86,7 +86,7 @@ function AdminItemSpawner.Server.ServerCommands.SpawnItems(player, args)
     local logText = string.format(
         "[Player: %s | SteamID: %s | Role: %s] Spawned items at (%s,%s,%s) | Radius: %s | Mode: %s | Target: %s | Items: %s",
         tostring(player:getUsername() or "Unknown"),
-        tostring(player:getSteamID() or "0"),
+        tostring(args.steamID or "0"),
         tostring(player:getAccessLevel() or "None"),
         tostring(args.x or "-1"),
         tostring(args.y or "-1"),

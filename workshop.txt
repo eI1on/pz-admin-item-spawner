@@ -1,57 +1,89 @@
 version=1
-id=3415883119
-title=[B41] Admin Item Spawner [DEV Branch]
-description=[h1]Admin Item Spawner [DEV Branch][/h1]
-description=A powerful admin tool that allows for item spawning with multiple spawn modes.
+id=3546343421
+title=[B41] Admin Item Spawner
+description=A comprehensive admin tool for Project Zomboid that provides flexible item spawning capabilities with multiple targeting modes and precise control.
 description=
-description=[h2]Features[/h2]
+description=[h2]Core Features[/h2]
 description=[list]
-description=[*][b]Multiple Spawn Modes[/b]: Choose between Local (radius-based), Global (world spawn), or Player-targeted spawning
-description=[*][b]Local Radius System[/b]: Spawn items to all players within a specified radius from selected coordinates
-description=[*][b]Multi-Item Support[/b]: Spawn multiple items at once using a simple syntax (Module.ItemType=Amount)
-description=[*][b]Visual Selection[/b]: Red circle marker shows the affected radius for local spawning
-description=[*][b]Player Targeting[/b]: Option to spawn items to a specific player
-description=[*][b]Easy Access[/b]: Available through the Admin Panel, Debug Menu, and right-click context menu (in SP)
+description=[*][b]Three Spawn Modes[/b]: Local radius-based, Global server-wide, and Player-specific targeting
+description=[*][b]Precise Coordinate Selection[/b]: Use "Pick Square" to visually select exact spawn locations on the map
+description=[*][b]Visual Radius Indicator[/b]: Red circular marker shows the affected area for local spawning
+description=[*][b]Multi-Item Support[/b]: Spawn multiple items simultaneously using simple syntax
+description=[*][b]Player Management[/b]: Real-time player list with username and display name support
+description=[*][b]Comprehensive Logging[/b]: Server-side logging of all spawn actions for admin oversight
+description=[*][b]Multi-Access Integration[/b]: Available through Admin Panel, Debug Menu, and right-click context menu
+description=[/list]
+description=
+description=[h2]Spawn Modes Explained[/h2]
+description=[list]
+description=[*][b]Local Spawn (Within Radius)[/b]: Items spawn to all players within a specified radius from selected coordinates. Perfect for area-specific rewards or events.
+description=[*][b]Global Spawn (All Players)[/b]: Items spawn to every player on the server regardless of location. Ideal for server-wide announcements or rewards.
+description=[*][b]Target Player[/b]: Items spawn directly into a specific player's inventory. Works at any distance and provides precise control.
 description=[/list]
 description=
 description=[h2]How to Use[/h2]
 description=[list]
-description=[*]Access through Admin Panel, Debug Menu (admin privileges required)
-description=[*]Select spawn mode:
-description=[list]
-description=[*]Local: Items spawn to all players within specified radius
-description=[*]Global: Items spawn to all players on the server
-description=[*]Player: Items spawn to selected player only
-description=[/list]
-description=[*]For local mode:
-description=[list]
-description=[*]Choose center coordinates using "Pick Square"
-description=[*]Set radius to determine which players receive items
-description=[/list]
-description=[*]For player mode:
-description=[list]
-description=[*]Select target player from the list
-description=[/list]
-description=[*]Enter items in the format: "Module.ItemType=Amount" (one per line or separated by ";" for multiple per line)
-description=[*]For player mode, select target player from the list
-description=[*]Click Spawn to execute
+description=[*]Access the tool through Admin Panel, Debug Menu (requires admin privileges on servers), or right-click context menu in singleplayer
+description=[*]Select spawn coordinates using "Pick Square" button for precise location targeting
+description=[*]Choose your spawn mode based on your needs
+description=[*]For Local mode: Set the radius to determine which players receive items
+description=[*]For Player mode: Select the target player from the dynamic player list
+description=[*]Enter items using the format: "Module.ItemType=Amount" (one per line or separated by semicolons)
+description=[*]Click Spawn to execute the operation
 description=[/list]
 description=
 description=[h2]Item Format Examples[/h2]
 description=[code]
-description=Base.Axe=1;Base.Acorn;
-description=Base.Hammer=5;Base.SheetPaper=1;
-description=Base.Nails=10
+description=Base.Axe=1;Base.Acorn=5;
+description=Base.Hammer=2;Base.SheetPaper2=10;
+description=Base.Nails=25;Base.WoodenStick=15;
 description=[/code]
 description=
-description=[h2]Compatibility[/h2]
+description=[h2]Advanced Features[/h2]
 description=[list]
-description=[*]Works in both singleplayer and multiplayer
-description=[*]Requires admin privileges in multiplayer
+description=[*][b]Smart Item Parsing[/b]: Automatically handles both "Module.ItemType" (defaults to 1) and "Module.ItemType=Amount" formats
+description=[*][b]Real-time Updates[/b]: Player list automatically updates when players join/leave the server
+description=[*][b]Visual Feedback[/b]: Clear visual indicators show which spawn mode is active and what area is affected
+description=[*][b]Cross-Platform Support[/b]: Works in singleplayer and dedicated server environments
 description=[/list]
 description=
-description=[i][b]Note:[/b] This is the developer branch of the mod, which may include bugs or experimental features.[/i]
-description=[i]The mod's functionality may be subject to change in future updates.[/i]
+description=[h2]Technical Details[/h2]
+description=[list]
+description=[*]Requires admin privileges in multiplayer environments
+description=[*]Comprehensive server-side logging for security and audit purposes
+description=[*]Optimized performance with minimal impact on game performance
+description=[/list]
+description=
+description=[h2]Use Cases[/h2]
+description=[list]
+description=[*]Server administration and player management
+description=[*]Event hosting and reward distribution
+description=[*]Player support and item recovery
+description=[*]Custom game modes and scenarios
+description=[/list]
+description=
+description=[h1]Requirements[/h1]
+description=[list]
+description=[*][b]ElyonLib[/b]
+description=[*][b]Starlit Library[/b]
+description=[/list]
+description=Load these [b]before[/b] Vehicle Respawn Manager.
+description=
+description=[hr][/hr]
+description=[h1] Frequently Asked Question: [/h1]
+description=
+description=[h2] Is it compatible with Multiplayer? [/h2]
+description= Absolutely! Extensively tested and fully functional on MP servers.
+description=
+description=[h2] Does it work on existing saves? [/h2]
+description= Absolutely! Enable it mid-save without issues.
+description=
+description=[h2] Does it work for all game versions? [/h2]
+description= Only tested and working on the latest game version (v41.78.16).
+description=
+description=[i][b]Developer Note:[/b] This mod is in development, featuring the latest improvements and experimental features. While thoroughly tested, some features may be refined in future stable releases.[/i]
+description=
+description=This mod was commissioned by the [b]Dawn of the Dead[/b] community. I'm open to new commissions - contact me on Discord [b].ely0n[/b] or find me in the PZ Modding Discord.
 description=
 description=[hr][/hr]
 description=[url=https://discord.gg/asA9BuAasd] [img] https://raw.githubusercontent.com/eI1on/workshop_resources/main/workshop_images/Workshop_Desc_PZ_Modding_Disc.png [/img] [/url]
@@ -62,5 +94,5 @@ description=This mod's permissions fall under TIS's policy [url=https://theindie
 description=This mod cannot be modified by anyone else, for anything else, at all, ever. Even if the user disappears, they would much rather you didn't touch the fruits of their hard labour.
 description=[/quote]
 description=[url=http://theindiestone.com/forums/index.php/topic/2530-mod-permissions/?p=36479][img] https://raw.githubusercontent.com/eI1on/workshop_resources/main/mod_permissions_images/on_lockdown.png [/img][/url]
-tags=Build 41;Interface;Items;Map;Misc;Multiplayer
-visibility=unlisted
+tags=Build 41;Interface;Items;Misc;Multiplayer
+visibility=public

@@ -1,1 +1,1 @@
-return require("ElyonLib/Logger"):new("Map Marker System");
+return require("ElyonLib/Core/Logger"):new("Map Marker System");

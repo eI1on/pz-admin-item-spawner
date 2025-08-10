@@ -1,7 +1,7 @@
-name=[B41] Admin Item Spawner [DEV Branch]
+name=[B41] Admin Item Spawner
 poster=poster.png
-id=AdminItemSpawner_DEV
-description=
+id=AdminItemSpawner
+description=A comprehensive admin tool for Project Zomboid that provides flexible item spawning capabilities with multiple targeting modes and precise control.
 require=ElyonLib,StarlitLibrary
 tags=Build 41,Misc,Multiplayer,Interface
 versionMin=41.0

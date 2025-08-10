@@ -1,6 +1,6 @@
 IGUI_EN = {
 
-    IGUI_AIS_AdminItemSpawnerManager = "Admin Item Spawner Manager",
+    IGUI_AIS_AdminItemSpawner = "Inventory Item Spawner",
     IGUI_AIS_Coordinates = "Coordinates",
     IGUI_AIS_PickSquare = "Pick Square",
     IGUI_AIS_GlobalSpawn = "Global Spawn",
