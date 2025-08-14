@@ -445,13 +445,13 @@ function ISAdminPanelUI:create()
     local lastButton = self.children[self.IDMax - 1];
     lastButton = lastButton.internal == "CANCEL" and self.children[self.IDMax - 2] or lastButton;
 
-    self.showAdminItemSpawner = ISButton:new(lastButton.x, lastButton.y + btnHgt + btnGapY, btnWid, btnHgt,
+    self.showAdminItemSpawnerPanel = ISButton:new(lastButton.x, lastButton.y + btnHgt + btnGapY, btnWid, btnHgt,
         getText("IGUI_AIS_AdminItemSpawner"), self, AdminItemSpawnerPanel.openPanel);
-    self.showAdminItemSpawner.internal = "";
+    self.showAdminItemSpawnerPanel.internal = "";
     self.showAdminItemSpawnerPanel:initialise();
     self.showAdminItemSpawnerPanel:instantiate();
-    self.showAdminItemSpawner.borderColor = self.buttonBorderColor;
-    self:addChild(self.showAdminItemSpawner);
+    self.showAdminItemSpawnerPanel.borderColor = self.buttonBorderColor;
+    self:addChild(self.showAdminItemSpawnerPanel);
 end
 
 local function onFillWorldObjectContextMenu(player, context, worldobjects)
