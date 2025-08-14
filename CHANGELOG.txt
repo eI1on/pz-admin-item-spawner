@@ -1,0 +1,7 @@
+13 APR 25
+e20d9d4
+
+Changelog:
+[list]
+[*] Fixed an issue where the admin couldn't open the panel
+[/list]

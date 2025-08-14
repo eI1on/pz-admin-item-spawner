@@ -1,40 +1,40 @@
 version=1
 id=3546343421
 title=[B41] Admin Item Spawner
-description=A comprehensive admin tool for Project Zomboid that provides flexible item spawning capabilities with multiple targeting modes and precise control.
+description=A comprehensive admin tool that provides flexible item spawning capabilities with multiple targeting modes.
 description=
 description=[h2]Core Features[/h2]
 description=[list]
-description=[*][b]Three Spawn Modes[/b]: Local radius-based, Global server-wide, and Player-specific targeting
-description=[*][b]Precise Coordinate Selection[/b]: Use "Pick Square" to visually select exact spawn locations on the map
+description=[*][b]Three Spawn Modes[/b]: Local radius-based, Global server-wide and Player-specific targeting
+description=[*][b]Coordinate Selection[/b]: Use "Pick Square" to visually select exact spawn locations on the map
 description=[*][b]Visual Radius Indicator[/b]: Red circular marker shows the affected area for local spawning
 description=[*][b]Multi-Item Support[/b]: Spawn multiple items simultaneously using simple syntax
 description=[*][b]Player Management[/b]: Real-time player list with username and display name support
 description=[*][b]Comprehensive Logging[/b]: Server-side logging of all spawn actions for admin oversight
-description=[*][b]Multi-Access Integration[/b]: Available through Admin Panel, Debug Menu, and right-click context menu
+description=[*][b]Multi-Access Integration[/b]: Available through Admin Panel and Debug Menu
 description=[/list]
 description=
 description=[h2]Spawn Modes Explained[/h2]
 description=[list]
-description=[*][b]Local Spawn (Within Radius)[/b]: Items spawn to all players within a specified radius from selected coordinates. Perfect for area-specific rewards or events.
-description=[*][b]Global Spawn (All Players)[/b]: Items spawn to every player on the server regardless of location. Ideal for server-wide announcements or rewards.
-description=[*][b]Target Player[/b]: Items spawn directly into a specific player's inventory. Works at any distance and provides precise control.
+description=[*][b]Local Spawn (Within Radius)[/b]: Items spawn to all players inventories within a specified radius from selected coordinates. Perfect for area-specific rewards or events.
+description=[*][b]Global Spawn (All Players)[/b]: Items spawn to every player inventory on the server regardless of location. Ideal for server-wide announcements or rewards.
+description=[*][b]Target Player[/b]: Items spawn directly into a specific player's inventory. Works at any distance.
 description=[/list]
 description=
 description=[h2]How to Use[/h2]
 description=[list]
-description=[*]Access the tool through Admin Panel, Debug Menu (requires admin privileges on servers), or right-click context menu in singleplayer
-description=[*]Select spawn coordinates using "Pick Square" button for precise location targeting
+description=[*]Access the tool through Admin Panel, Debug Menu (requires admin privileges on servers)
 description=[*]Choose your spawn mode based on your needs
+description=[*](Optional) For Local Spawn select spawn coordinates using "Pick Square" button for precise location targeting
 description=[*]For Local mode: Set the radius to determine which players receive items
 description=[*]For Player mode: Select the target player from the dynamic player list
-description=[*]Enter items using the format: "Module.ItemType=Amount" (one per line or separated by semicolons)
+description=[*]Enter items using the format (see below an example): "Module.ItemType=Amount" (one per line or separated by semicolons)
 description=[*]Click Spawn to execute the operation
 description=[/list]
 description=
-description=[h2]Item Format Examples[/h2]
+description=[h2]Items List Format Examples[/h2]
 description=[code]
-description=Base.Axe=1;Base.Acorn=5;
+description=Base.Axe;Base.Acorn=5;
 description=Base.Hammer=2;Base.SheetPaper2=10;
 description=Base.Nails=25;Base.WoodenStick=15;
 description=[/code]
@@ -43,7 +43,7 @@ description=[h2]Advanced Features[/h2]
 description=[list]
 description=[*][b]Smart Item Parsing[/b]: Automatically handles both "Module.ItemType" (defaults to 1) and "Module.ItemType=Amount" formats
 description=[*][b]Real-time Updates[/b]: Player list automatically updates when players join/leave the server
-description=[*][b]Visual Feedback[/b]: Clear visual indicators show which spawn mode is active and what area is affected
+description=[*][b]Visual Feedback[/b]: Clear UI visual indicators show which spawn mode is active and what area is affected
 description=[*][b]Cross-Platform Support[/b]: Works in singleplayer and dedicated server environments
 description=[/list]
 description=
@@ -67,7 +67,7 @@ description=[list]
 description=[*][b]ElyonLib[/b]
 description=[*][b]Starlit Library[/b]
 description=[/list]
-description=Load these [b]before[/b] Vehicle Respawn Manager.
+description=Load these [b]before[/b] Admin Item Spawner .
 description=
 description=[hr][/hr]
 description=[h1] Frequently Asked Question: [/h1]
