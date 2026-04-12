@@ -425,55 +425,15 @@ function AdminItemSpawnerPanel.openPanel()
     end
 end
 
-local ISDebugMenu_setupButtons = ISDebugMenu.setupButtons;
----@diagnostic disable-next-line: duplicate-set-field
-function ISDebugMenu:setupButtons()
-    self:addButtonInfo(getText("IGUI_AIS_AdminItemSpawner"), function() AdminItemSpawnerPanel.openPanel() end,
-        "MAIN");
-    ISDebugMenu_setupButtons(self);
-end
+local MenuDock = require("ElyonLib/UI/MenuDock/MenuDock")
 
-local ISAdminPanelUI_create = ISAdminPanelUI.create;
----@diagnostic disable-next-line: duplicate-set-field
-function ISAdminPanelUI:create()
-    ISAdminPanelUI_create(self);
-    local fontHeight = getTextManager():getFontHeight(UIFont.Small);
-    local btnWid = 150;
-    local btnHgt = math.max(25, fontHeight + 3 * 2);
-    local btnGapY = 5;
-
-    local lastButton = self.children[self.IDMax - 1];
-    lastButton = lastButton.internal == "CANCEL" and self.children[self.IDMax - 2] or lastButton;
-
-    self.showAdminItemSpawnerPanel = ISButton:new(lastButton.x, lastButton.y + btnHgt + btnGapY, btnWid, btnHgt,
-        getText("IGUI_AIS_AdminItemSpawner"), self, AdminItemSpawnerPanel.openPanel);
-    self.showAdminItemSpawnerPanel.internal = "";
-    self.showAdminItemSpawnerPanel:initialise();
-    self.showAdminItemSpawnerPanel:instantiate();
-    self.showAdminItemSpawnerPanel.borderColor = self.buttonBorderColor;
-    self:addChild(self.showAdminItemSpawnerPanel);
-end
-
-local function onFillWorldObjectContextMenu(player, context, worldobjects)
-    if not player then return; end
-    local hasAccess = false;
-    if Globals.isSingleplayer then
-        hasAccess = true;
-    elseif Globals.isClient then
-        -- hasAccess = isAdmin();
-    end
-
-    if Globals.isDebug then hasAccess = true; end
-
-    if hasAccess then
-        context:addOptionOnTop(
-            getText("IGUI_AIS_AdminItemSpawner"), worldobjects,
-            function()
-                AdminItemSpawnerPanel.openPanel();
-            end
-        );
-    end
-end
-
-Events.OnFillWorldObjectContextMenu.Remove(onFillWorldObjectContextMenu);
-Events.OnFillWorldObjectContextMenu.Add(onFillWorldObjectContextMenu);
+MenuDock.registerButton({
+    id = "admin_item_spawner",
+    title = getText("IGUI_AIS_AdminItemSpawner"),
+    icon = "media/ui/ui_icon_admin_item_spawner.png",
+    minimumAccessLevel = "Admin",
+    allowSinglePlayer = true,
+    onClick = function(playerNum, entry)
+        AdminItemSpawnerPanel.openPanel();
+    end,
+})
