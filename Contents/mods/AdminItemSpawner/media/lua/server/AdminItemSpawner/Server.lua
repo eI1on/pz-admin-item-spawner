@@ -5,10 +5,6 @@ local AdminItemSpawner = require("AdminItemSpawner/Shared");
 AdminItemSpawner.Server = {};
 AdminItemSpawner.Server.ServerCommands = {};
 
---------------------------------------------------
--- UTILITY FUNCTIONS
---------------------------------------------------
-
 local SPAWN_MODES = {
     LOCAL = "local",
     GLOBAL = "global",
@@ -45,16 +41,10 @@ local function formatItemsList(items)
     return table.concat(lines, ";");
 end
 
---------------------------------------------------
--- LOGGING ACTIONS ON SERVER
---------------------------------------------------
 function AdminItemSpawner.Server.writeLog(packet)
     writeLog(packet.loggerName, packet.logText);
 end
 
---------------------------------------------------
--- PUSHING UPDATES TO CLIENTS
---------------------------------------------------
 function AdminItemSpawner.Server.PushUpdateToAll(args)
     if Globals.isServer then
         sendServerCommand("AdminItemSpawner", "SpawnItems", args);
@@ -66,10 +56,6 @@ function AdminItemSpawner.Server.PushUpdateToPlayer(player, args)
         sendServerCommand(player, "AdminItemSpawner", "SpawnItems", args);
     end
 end
-
---------------------------------------------------
--- SERVER COMMAND HANDLERS
---------------------------------------------------
 
 ---@param player IsoPlayer
 ---@param args table

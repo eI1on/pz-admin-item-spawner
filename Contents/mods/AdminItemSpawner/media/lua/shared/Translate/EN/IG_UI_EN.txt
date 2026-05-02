@@ -8,11 +8,13 @@ IGUI_EN = {
     IGUI_AIS_ItemsList = "Items List",
     IGUI_AIS_Spawn = "Spawn",
     IGUI_AIS_Cancel = "Cancel",
-
+    IGUI_AIS_SpawnMode = "Spawn Mode",
     IGUI_AIS_SpawnLocal = "Local Spawn (Within Radius)",
     IGUI_AIS_SpawnGlobal = "Global Spawn (All Players)",
     IGUI_AIS_SpawnToPlayer = "Target Player",
     IGUI_AIS_PlayerList1 = "TARGET PLAYER",
     IGUI_AIS_PlayerList2 = "(Select a player to receive the items)",
+
+    IGUI_AIS_IReceived = "I received as a reward: ",
 
 }

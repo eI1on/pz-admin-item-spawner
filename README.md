@@ -1,2 +1,0 @@
-# pz-admin-item-spawner
- 

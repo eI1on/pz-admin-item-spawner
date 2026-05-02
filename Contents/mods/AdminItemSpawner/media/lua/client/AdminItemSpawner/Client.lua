@@ -18,7 +18,7 @@ local function spawnItemsOnPlayer(playerObj, items)
         end
     end
     if #itemsReceivedInfo >= 0 then
-        playerObj:setHaloNote(getText("ContextMenu_AIS_IReceived") .. table.concat(itemsReceivedInfo, ", "),255,255,255, 500)
+        playerObj:setHaloNote(getText("IGUI_AIS_IReceived") .. table.concat(itemsReceivedInfo, ", "),255,255,255, 500)
     end
 end
 

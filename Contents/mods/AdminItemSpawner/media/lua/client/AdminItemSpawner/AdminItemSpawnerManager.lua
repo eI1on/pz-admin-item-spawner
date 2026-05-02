@@ -1,439 +1,503 @@
-local Globals = require("Starlit/Globals");
-local Logger = require("AdminItemSpawner/Logger");
+require "ISUI/ISCollapsableWindow"
+require "ISUI/ISButton"
+require "ISUI/ISLabel"
+require "ISUI/ISScrollingListBox"
+require "ISUI/ISTextEntryBox"
 
-local AdminItemSpawner = require("AdminItemSpawner/Shared");
+local Globals                  = require("Starlit/Globals")
+local Logger                   = require("AdminItemSpawner/Logger")
+local AdminItemSpawner         = require("AdminItemSpawner/Shared")
+local Theme                    = require("ElyonLib/UI/Theme/Theme")
 
-AdminItemSpawnerPanel = ISPanel:derive("AdminItemSpawnerPanel");
-AdminItemSpawnerPanel.instance = nil;
+AdminItemSpawnerPanel          = ISCollapsableWindow:derive("AdminItemSpawnerPanel")
+AdminItemSpawnerPanel.instance = nil
 
-local CONST = {
-    PADDING = 20,
-    ELEMENT_HEIGHT = 25,
-    MODAL_WIDTH = 300,
-    MODAL_HEIGHT = 600,
-    LABEL_WIDTH = 80,
-    ENTRY_WIDTH = 200,
-    COORD_ENTRY_WIDTH = 60,
-    SECTION_SPACING = 15,
-    ITEM_SPACING = 10,
-    BUTTON_WIDTH = 100,
-    BUTTON_HEIGHT = 30,
-    PLAYER_LIST_HEIGHT = 100,
-    ITEMS_LIST_HEIGHT = 150,
-    FONT = {
-        SMALL = UIFont.Small,
-        MEDIUM = UIFont.Medium,
-        LARGE = UIFont.Large
-    },
-    COLORS = {
-        BORDER = { r = 0.4, g = 0.4, b = 0.4, a = 1 },
-        BACKGROUND = { r = 0.1, g = 0.1, b = 0.1, a = 0.85 },
-        TEXT = { r = 1, g = 1, b = 1, a = 1 },
-        LIST_HIGHLIGHT = { r = 0.3, g = 0.3, b = 0.3, a = 1 },
-        PLAYER_SECTION = { r = 0.2, g = 0.8, b = 0.4, a = 1 },
-        PLAYER_SECTION_INACTIVE = { r = 0.5, g = 0.1, b = 0.1, a = 1 }
-    },
-    SPAWN_MODES = {
-        LOCAL = "local",
+local FONT_HGT_SMALL           = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM          = getTextManager():getFontHeight(UIFont.Medium)
+
+local C                        = {
+    DEFAULT_W     = 480,
+    DEFAULT_H     = 580,
+    MIN_W         = 420,
+    MIN_H         = 480,
+    PAD           = 12,
+    GAP           = 8,
+    BUTTON_H      = 26,
+    FIELD_H       = 24,
+    ROW_H         = 24,
+    PLAYER_LIST_H = 100,
+    ITEMS_MIN_H   = 80,
+    SPAWN_MODES   = {
+        LOCAL  = "local",
         GLOBAL = "global",
-        PLAYER = "player"
-    }
-};
+        PLAYER = "player",
+    },
+    COLORS        = (function()
+        local colors                   = Theme.standardColors()
+        local T                        = Theme.colors
+        colors.PLAYER_SECTION          = Theme.copy(T.success)
+        colors.PLAYER_SECTION_INACTIVE = Theme.copy(T.textDim)
+        colors.LIST_HIGHLIGHT          = Theme.copy(T.selected)
+        return colors
+    end)(),
+}
 
-function AdminItemSpawnerPanel:new(x, y, width, height, playerObj, square)
-    local o = ISPanel:new(x, y, CONST.MODAL_WIDTH, CONST.MODAL_HEIGHT);
-    setmetatable(o, self);
-    self.__index = self;
-
-    o.borderColor = CONST.COLORS.BORDER;
-    o.backgroundColor = CONST.COLORS.BACKGROUND;
-    o.width = CONST.MODAL_WIDTH;
-    o.height = CONST.MODAL_HEIGHT;
-    o.playerObj = playerObj;
-    o.moveWithMouse = true;
-    o.selectedPlayer = nil;
-    o.spawnMode = CONST.SPAWN_MODES.LOCAL;
-
-    o.selectX = square:getX();
-    o.selectY = square:getY();
-    o.selectZ = square:getZ();
-    o:addMarker(square, 1);
-
-    o.scoreboard = nil;
-
-    return o;
+local function applyButtonStyle(btn, variant)
+    Theme.applyButtonStyle(btn, variant)
 end
 
-function AdminItemSpawnerPanel:createSpawnModeSection(y)
-    self.spawnModeGroup = ISRadioButtons:new(CONST.PADDING, y, CONST.LABEL_WIDTH * 2, CONST.ELEMENT_HEIGHT, self,
-        self.onSpawnModeChanged);
-    self.spawnModeGroup:addOption(getText("IGUI_AIS_SpawnLocal"));
-    self.spawnModeGroup:addOption(getText("IGUI_AIS_SpawnGlobal"));
-    self.spawnModeGroup:addOption(getText("IGUI_AIS_SpawnToPlayer"));
-    self.spawnModeGroup.selectedValue = CONST.SPAWN_MODES.LOCAL;
-    self.spawnModeGroup.tooltip = getText("Tooltip_AIS_SpawnModeGroup");
-    self:addChild(self.spawnModeGroup);
-
-    return self.spawnModeGroup:getBottom() + CONST.SECTION_SPACING;
+local function applyFieldStyle(entry)
+    Theme.applyFieldStyle(entry)
 end
 
-function AdminItemSpawnerPanel:createPlayerList(y)
-    self.playerListLabel1 = ISLabel:new(CONST.PADDING, y, CONST.ELEMENT_HEIGHT,
-        getText("IGUI_AIS_PlayerList1"),
-        CONST.COLORS.PLAYER_SECTION_INACTIVE.r,
-        CONST.COLORS.PLAYER_SECTION_INACTIVE.g,
-        CONST.COLORS.PLAYER_SECTION_INACTIVE.b,
-        1, CONST.FONT.MEDIUM, true);
-    self:addChild(self.playerListLabel1);
-    y = self.playerListLabel1:getBottom();
-
-    self.playerListLabel2 = ISLabel:new(CONST.PADDING, y, CONST.ELEMENT_HEIGHT,
-        getText("IGUI_AIS_PlayerList2"),
-        CONST.COLORS.PLAYER_SECTION_INACTIVE.r,
-        CONST.COLORS.PLAYER_SECTION_INACTIVE.g,
-        CONST.COLORS.PLAYER_SECTION_INACTIVE.b,
-        1, CONST.FONT.MEDIUM, true);
-    self:addChild(self.playerListLabel2);
-    y = self.playerListLabel2:getBottom();
-
-    self.playerList = ISScrollingListBox:new(
-        CONST.PADDING, y,
-        self.width - (CONST.PADDING * 2),
-        CONST.PLAYER_LIST_HEIGHT
-    );
-    self.playerList:initialise();
-    self.playerList:instantiate();
-    self.playerList.itemheight = CONST.ELEMENT_HEIGHT;
-    self.playerList.selected = 0;
-    self.playerList.joypadParent = self;
-    self.playerList.font = CONST.FONT.SMALL;
-    self.playerList.doDrawItem = self.drawPlayerListItem;
-    self.playerList.drawBorder = true;
-    self.playerList.borderColor = CONST.COLORS.PLAYER_SECTION_INACTIVE;
-    self:addChild(self.playerList);
-
-    self:populatePlayerList();
-    return self.playerList:getBottom() + CONST.SECTION_SPACING;
+local function sectionLabel(panel, text)
+    local lbl = ISLabel:new(0, 0, FONT_HGT_MEDIUM, text, 1, 1, 1, 1, UIFont.Medium, true)
+    lbl:initialise()
+    lbl:instantiate()
+    panel:addChild(lbl)
+    return lbl
 end
 
-function AdminItemSpawnerPanel:populatePlayerList()
-    self.playerList:clear();
-    if Globals.isSingleplayer then
-        local item = {};
-        local name = self.playerObj:getDisplayName();
-        item.username = self.playerObj:getUsername();
-        item.displayName = name;
-        self.playerList:addItem(name, item);
-    elseif Globals.isClient then
-        if not self.scoreboard then return end
-        for i = 0, self.scoreboard.usernames:size() - 1 do
-            local username = self.scoreboard.usernames:get(i);
-            local displayName = self.scoreboard.displayNames:get(i);
-            if username ~= self.playerObj:getUsername() then
-                local item = {};
-                local name = displayName;
-                item.username = username;
-                item.displayName = displayName;
-                local item0 = self.playerList:addItem(name, item);
-                if username ~= displayName then
-                    item0.tooltip = username;
-                end
-            end
-        end
+local function fieldLabel(panel, text)
+    local lbl = ISLabel:new(0, 0, FONT_HGT_SMALL, text,
+        C.COLORS.MUTED.r, C.COLORS.MUTED.g, C.COLORS.MUTED.b, 1, UIFont.Small, true)
+    lbl:initialise()
+    lbl:instantiate()
+    panel:addChild(lbl)
+    return lbl
+end
+
+local function colorLabel(panel, text, color)
+    local col = color or C.COLORS.MUTED
+    local lbl = ISLabel:new(0, 0, FONT_HGT_SMALL, text, col.r, col.g, col.b, 1, UIFont.Small, true)
+    lbl:initialise()
+    lbl:instantiate()
+    panel:addChild(lbl)
+    return lbl
+end
+
+local function makeButton(panel, text, internal, variant, handler)
+    local btn = ISButton:new(0, 0, 80, C.BUTTON_H, text, panel, handler)
+    btn.internal = internal
+    btn:initialise()
+    btn:instantiate()
+    applyButtonStyle(btn, variant)
+    panel:addChild(btn)
+    return btn
+end
+
+local function makeEntry(panel, text, numbersOnly, multiline)
+    local entry = ISTextEntryBox:new(text or "", 0, 0, 80, C.FIELD_H)
+    entry:initialise()
+    entry:instantiate()
+    if numbersOnly then entry:setOnlyNumbers(true) end
+    if multiline then
+        entry:setMultipleLine(true)
+        entry:setMaxLines(999)
     end
+    applyFieldStyle(entry)
+    panel:addChild(entry)
+    return entry
 end
 
-function AdminItemSpawnerPanel:drawPlayerListItem(y, item, alt)
-    local highlight = self.selected == item.index;
-    local backgroundColor = highlight and CONST.COLORS.LIST_HIGHLIGHT or
-        (alt and CONST.COLORS.BACKGROUND or { r = 0.2, g = 0.2, b = 0.2, a = 0.85 });
+local function makeList(panel, drawFn, itemH)
+    local list = ISScrollingListBox:new(0, 0, 80, 60)
+    list:initialise()
+    list:instantiate()
+    list.itemheight = itemH or C.ROW_H
+    list.font = UIFont.Small
+    list.drawBorder = true
+    list.selected = 0
+    list.joypadParent = panel
+    list.doDrawItem = drawFn
+    Theme.applyListStyle(list)
+    list.drawBorder = true
+    panel:addChild(list)
+    return list
+end
 
-    self:drawRect(0, y, self:getWidth(), self.itemheight - 1, backgroundColor.a, backgroundColor.r, backgroundColor.g,
-        backgroundColor.b);
-    self:drawText(item.text, 4, y + 2, CONST.COLORS.TEXT.r, CONST.COLORS.TEXT.g, CONST.COLORS.TEXT.b, CONST.COLORS.TEXT
-        .a, self.font);
+local function setBounds(ctrl, x, y, w, h)
+    if not ctrl then return end
+    ctrl:setX(x)
+    ctrl:setY(y)
+    ctrl:setWidth(w)
+    ctrl:setHeight(h)
+end
 
-    return y + self.itemheight;
+function AdminItemSpawnerPanel:new(x, y, playerObj, square)
+    local o = ISCollapsableWindow.new(self, x, y, C.DEFAULT_W, C.DEFAULT_H)
+    setmetatable(o, self)
+    self.__index      = self
+
+    o.playerObj       = playerObj
+    o.spawnMode       = C.SPAWN_MODES.LOCAL
+    o.selectX         = square:getX()
+    o.selectY         = square:getY()
+    o.selectZ         = square:getZ()
+    o.scoreboard      = nil
+    o.layoutDirty     = true
+    o.lastLayoutW     = 0
+    o.lastLayoutH     = 0
+
+    o.backgroundColor = Theme.copy(Theme.colors.background)
+    o.borderColor     = Theme.copy(Theme.colors.border)
+    o.resizable       = true
+    o.minimumWidth    = C.MIN_W
+    o.minimumHeight   = C.MIN_H
+
+    o:addMarker(square, 1)
+    return o
 end
 
 function AdminItemSpawnerPanel:initialise()
-    ISPanel.initialise(self);
-    local y = CONST.PADDING;
+    ISCollapsableWindow.initialise(self)
+    self.title = getText("IGUI_AIS_AdminItemSpawner")
+end
 
-    self.titleLabel = ISLabel:new(
-        (self.width - getTextManager():MeasureStringX(CONST.FONT.LARGE, getText("IGUI_AIS_AdminItemSpawner"))) / 2,
-        y, CONST.ELEMENT_HEIGHT, getText("IGUI_AIS_AdminItemSpawner"),
-        1, 1, 1, 1, CONST.FONT.LARGE, true
-    );
-    self:addChild(self.titleLabel);
-    y = self.titleLabel:getBottom() + CONST.SECTION_SPACING;
+function AdminItemSpawnerPanel:createChildren()
+    ISCollapsableWindow.createChildren(self)
+    self:setResizable(true)
 
-    y = self:createCoordinatesSection(y);
+    self.lblCoordTitle = sectionLabel(self, getText("IGUI_AIS_Coordinates"))
+    self.lblCoordValue = fieldLabel(self, "X: 0, Y: 0, Z: 0")
+    self.btnPickSquare = makeButton(self, getText("IGUI_AIS_PickSquare"), "PICK_SQUARE", nil,
+        AdminItemSpawnerPanel.onButtonClick)
 
-    y = self:createSpawnModeSection(y);
+    self.lblSpawnMode = sectionLabel(self, getText("IGUI_AIS_SpawnMode") or "Spawn Mode")
+    self.spawnModeGroup = ISRadioButtons:new(0, 0, 300, C.ROW_H, self,
+        AdminItemSpawnerPanel.onSpawnModeChanged)
+    self.spawnModeGroup:addOption(getText("IGUI_AIS_SpawnLocal"))
+    self.spawnModeGroup:addOption(getText("IGUI_AIS_SpawnGlobal"))
+    self.spawnModeGroup:addOption(getText("IGUI_AIS_SpawnToPlayer"))
+    self.spawnModeGroup.selectedValue = C.SPAWN_MODES.LOCAL
+    self.spawnModeGroup.tooltip = getText("Tooltip_AIS_SpawnModeGroup")
+    self:addChild(self.spawnModeGroup)
 
-    y = self:createPlayerList(y);
+    self.lblPlayerTitle1        = colorLabel(self, getText("IGUI_AIS_PlayerList1"), C.COLORS.PLAYER_SECTION_INACTIVE)
+    self.lblPlayerTitle2        = colorLabel(self, getText("IGUI_AIS_PlayerList2"), C.COLORS.PLAYER_SECTION_INACTIVE)
+    self.playerList             = makeList(self, AdminItemSpawnerPanel.drawPlayerListItem, C.ROW_H)
+    self.playerList.borderColor = Theme.copy(C.COLORS.PLAYER_SECTION_INACTIVE)
 
-    y = self:createRadiusSection(y);
+    self.lblRadius              = sectionLabel(self, getText("IGUI_AIS_Radius"))
+    self.entryRadius            = makeEntry(self, "1", true, false)
 
-    y = self:createItemsSection(y);
+    self.lblItems               = sectionLabel(self, getText("IGUI_AIS_ItemsList"))
+    self.entryItems             = makeEntry(self, "", false, true)
+    self.entryItems.tooltip = getText("Tooltip_AIS_ItemsList")
 
-    y = self:createButtonsSection(y);
+    self.btnSpawn               = makeButton(self, getText("IGUI_AIS_Spawn"), "SPAWN", "primary",
+        AdminItemSpawnerPanel.onButtonClick)
+    self.btnCancel              = makeButton(self, getText("IGUI_AIS_Cancel"), "CANCEL", "danger",
+        AdminItemSpawnerPanel.onButtonClick)
 
-    self:setHeight(y + CONST.PADDING);
+    self:updateCoordLabel()
+    self:populatePlayerList()
 
     if Globals.isClient then
-        scoreboardUpdate();
+        scoreboardUpdate()
+    end
+
+    self:layoutChildren()
+end
+
+function AdminItemSpawnerPanel:layoutChildren()
+    if not self.lblCoordTitle then return end
+    if self.isCollapsed then return end
+
+    local w = math.max(self.width, C.MIN_W)
+    local h = math.max(self.height, C.MIN_H)
+    if self.width ~= w then self:setWidth(w) end
+    if self.height ~= h then self:setHeight(h) end
+
+    self.layoutDirty = false
+    self.lastLayoutW = w
+    self.lastLayoutH = h
+
+    local pad        = C.PAD
+    local gap        = C.GAP
+    local btnH       = C.BUTTON_H
+    local fieldH     = C.FIELD_H
+    local cw         = w - pad * 2 -- content width
+    local titleH     = self:titleBarHeight()
+    local resizeH    = self.resizable and self:resizeWidgetHeight() or 0
+
+    local y          = titleH + gap
+
+    local pickW      = math.min(120, math.floor(cw * 0.30))
+    setBounds(self.lblCoordTitle, pad, y, cw - pickW - gap, FONT_HGT_MEDIUM)
+    setBounds(self.btnPickSquare, pad + cw - pickW, y, pickW, btnH)
+    y = y + FONT_HGT_MEDIUM + 4
+    setBounds(self.lblCoordValue, pad, y, cw, FONT_HGT_SMALL)
+    self.lblCoordValue.originalX = pad
+    y = y + FONT_HGT_SMALL + gap + 4
+
+    self.divCoord = y
+    y = y + gap
+
+    setBounds(self.lblSpawnMode, pad, y, cw, FONT_HGT_MEDIUM)
+    y = y + FONT_HGT_MEDIUM + 4
+    self.spawnModeGroup:setX(pad)
+    self.spawnModeGroup:setY(y)
+    self.spawnModeGroup:setWidth(cw)
+    y = y + self.spawnModeGroup:getHeight() + gap + 4
+
+    self.divSpawnMode = y
+    y = y + gap
+
+    setBounds(self.lblPlayerTitle1, pad, y, cw, FONT_HGT_SMALL)
+    y = y + FONT_HGT_SMALL + 2
+    setBounds(self.lblPlayerTitle2, pad, y, cw, FONT_HGT_SMALL)
+    y = y + FONT_HGT_SMALL + 4
+    setBounds(self.playerList, pad, y, cw, C.PLAYER_LIST_H)
+    y = y + C.PLAYER_LIST_H + gap + 4
+
+    self.divPlayer = y
+    y = y + gap
+
+    local radiusLabelW = math.min(120,
+        getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AIS_Radius")) + 8)
+    local radiusEntryW = math.min(80, cw - radiusLabelW - gap)
+    setBounds(self.lblRadius, pad, y, radiusLabelW, FONT_HGT_MEDIUM)
+    setBounds(self.entryRadius, pad + radiusLabelW + gap, y, radiusEntryW, fieldH)
+    y               = y + math.max(FONT_HGT_MEDIUM, fieldH) + gap + 4
+
+    self.divRadius  = y
+    y               = y + gap
+
+    local footerY   = h - resizeH - pad - btnH
+    local itemsLblY = y
+    y               = y + FONT_HGT_MEDIUM + 4
+    local itemsH    = math.max(32, footerY - gap - y)
+    setBounds(self.lblItems, pad, itemsLblY, cw, FONT_HGT_MEDIUM)
+    setBounds(self.entryItems, pad, y, cw, itemsH)
+
+    local btnW = math.min(110, math.floor(cw * 0.35))
+    setBounds(self.btnSpawn, pad, footerY, btnW, btnH)
+    setBounds(self.btnCancel, w - pad - btnW, footerY, btnW, btnH)
+end
+
+function AdminItemSpawnerPanel:onResize()
+    self.layoutDirty = true
+    self:layoutChildren()
+end
+
+function AdminItemSpawnerPanel:prerender()
+    ISCollapsableWindow.prerender(self)
+    if self.layoutDirty or self.lastLayoutW ~= self.width or self.lastLayoutH ~= self.height then
+        self:layoutChildren()
+    end
+    local radius = self:getRadius() + 1
+    if self.marker and (self.marker:getSize() ~= radius) then
+        self.marker:setSize(radius)
     end
 end
 
-function AdminItemSpawnerPanel:createCoordinatesSection(y)
-    self.coordLabel = ISLabel:new(CONST.PADDING, y, CONST.ELEMENT_HEIGHT,
-        getText("IGUI_AIS_Coordinates"), 1, 1, 1, 1, CONST.FONT.MEDIUM, true);
-    self:addChild(self.coordLabel);
-
-    self.pickSquareButton = ISButton:new(
-        self.width - (CONST.BUTTON_WIDTH + CONST.PADDING), y,
-        CONST.BUTTON_WIDTH, CONST.ELEMENT_HEIGHT,
-        getText("IGUI_AIS_PickSquare"),
-        self, AdminItemSpawnerPanel.onSelectSquare
-    );
-    self:addChild(self.pickSquareButton);
-
-    y = self.coordLabel:getBottom();
-
-    self.coordTextLabel = ISLabel:new(CONST.PADDING, y, CONST.ELEMENT_HEIGHT,
-        string.format("X: %d, Y: %d, Z: %d", self.selectX, self.selectY, self.selectZ),
-        1, 1, 1, 1, CONST.FONT.MEDIUM, true);
-    self:addChild(self.coordTextLabel);
-
-
-    return self.coordTextLabel:getBottom() + CONST.SECTION_SPACING;
-end
-
-function AdminItemSpawnerPanel:createRadiusSection(y)
-    self.radiusLabel = ISLabel:new(CONST.PADDING, y, CONST.ELEMENT_HEIGHT,
-        getText("IGUI_AIS_Radius"), 1, 1, 1, 1, CONST.FONT.MEDIUM, true);
-    self:addChild(self.radiusLabel);
-
-    self.radiusEntryBox = ISTextEntryBox:new("1", self.radiusLabel:getRight() + CONST.ITEM_SPACING, y, 100,
-        CONST.ELEMENT_HEIGHT);
-    self.radiusEntryBox:initialise();
-    self.radiusEntryBox:instantiate();
-    self.radiusEntryBox:setOnlyNumbers(true);
-    self.radiusEntryBox:setEditable(true);
-    self:addChild(self.radiusEntryBox);
-
-    return self.radiusEntryBox:getBottom() + CONST.SECTION_SPACING;
-end
-
-function AdminItemSpawnerPanel:createItemsSection(y)
-    self.itemsLabel = ISLabel:new(CONST.PADDING, y, CONST.ELEMENT_HEIGHT,
-        getText("IGUI_AIS_ItemsList"), 1, 1, 1, 1, CONST.FONT.MEDIUM, true);
-    self:addChild(self.itemsLabel);
-    y = y + CONST.ELEMENT_HEIGHT;
-
-    self.itemsEntry = ISTextEntryBox:new("", CONST.PADDING, y,
-        self.width - (CONST.PADDING * 2), CONST.ITEMS_LIST_HEIGHT);
-    self.itemsEntry:initialise();
-    self.itemsEntry:instantiate();
-    self.itemsEntry:setMultipleLine(true);
-    self.itemsEntry:setMaxLines(999);
-    self.itemsEntry:setText("");
-    self:addChild(self.itemsEntry);
-
-    return self.itemsEntry:getBottom() + CONST.SECTION_SPACING;
-end
-
-function AdminItemSpawnerPanel:createButtonsSection(y)
-    self.spawnBtn = ISButton:new(
-        CONST.PADDING, y,
-        CONST.BUTTON_WIDTH, CONST.BUTTON_HEIGHT,
-        getText("IGUI_AIS_Spawn"),
-        self, AdminItemSpawnerPanel.onClick
-    );
-    self.spawnBtn.internal = "SPAWN";
-    self:addChild(self.spawnBtn);
-
-    self.cancelBtn = ISButton:new(
-        self.width - CONST.BUTTON_WIDTH - CONST.PADDING, y,
-        CONST.BUTTON_WIDTH, CONST.BUTTON_HEIGHT,
-        getText("IGUI_AIS_Cancel"),
-        self, AdminItemSpawnerPanel.onClick
-    );
-    self.cancelBtn.internal = "CANCEL";
-    self:addChild(self.cancelBtn);
-
-    return y + CONST.BUTTON_HEIGHT;
-end
-
-function AdminItemSpawnerPanel:onSpawnModeChanged(buttons, index)
-    local mode = (index == 1 and CONST.SPAWN_MODES.LOCAL) or (index == 2 and CONST.SPAWN_MODES.GLOBAL) or
-        (index == 3 and CONST.SPAWN_MODES.PLAYER)
-    self.spawnMode = mode;
-    local isPlayerMode = (mode == CONST.SPAWN_MODES.PLAYER);
-
-    local playerSelectionColor = {
-        r = isPlayerMode and CONST.COLORS.PLAYER_SECTION.r or CONST.COLORS.PLAYER_SECTION_INACTIVE.r,
-        g = isPlayerMode and CONST.COLORS.PLAYER_SECTION.g or CONST.COLORS.PLAYER_SECTION_INACTIVE.g,
-        b = isPlayerMode and CONST.COLORS.PLAYER_SECTION.b or CONST.COLORS.PLAYER_SECTION_INACTIVE.b,
-        a = 1.0
-    };
-    self.playerListLabel1:setColor(playerSelectionColor.r, playerSelectionColor.g, playerSelectionColor.b);
-    self.playerListLabel2:setColor(playerSelectionColor.r, playerSelectionColor.g, playerSelectionColor.b);
-    self.playerList.borderColor = playerSelectionColor;
-
-    self.radiusEntryBox:setEditable(mode == CONST.SPAWN_MODES.LOCAL);
-
-    if isPlayerMode then
-        self:populatePlayerList();
+function AdminItemSpawnerPanel:render()
+    ISCollapsableWindow.render(self)
+    if self.isCollapsed then return end
+    local T = Theme.colors
+    local lx = C.PAD
+    local lw = self.width - C.PAD * 2
+    for _, dy in ipairs({ self.divCoord, self.divSpawnMode, self.divPlayer, self.divRadius }) do
+        if dy then
+            self:drawRect(lx, dy, lw, 1, 0.35, T.borderDim.r, T.borderDim.g, T.borderDim.b)
+        end
     end
 end
 
-function AdminItemSpawnerPanel:parseItemsList(text)
-    local items = {};
-    for line in text:gmatch("[^\r\n]+") do
-        for entry in line:gmatch("[^;]+") do
-            entry = entry:trim();
-            if entry ~= "" then
-                local itemType, count = entry:match("([^=]+)=(%d+)");
-                if itemType then
-                    itemType = itemType:trim();
-                    count = tonumber(count);
-                    items[itemType] = (items[itemType] or 0) + count;
-                else
-                    itemType = entry;
-                    items[itemType] = (items[itemType] or 0) + 1;
+function AdminItemSpawnerPanel:updateCoordLabel()
+    if self.lblCoordValue then
+        self.lblCoordValue:setName(
+            string.format("X: %d, Y: %d, Z: %d", self.selectX, self.selectY, self.selectZ))
+    end
+end
+
+function AdminItemSpawnerPanel:populatePlayerList()
+    if not self.playerList then return end
+    self.playerList:clear()
+    if Globals.isSingleplayer then
+        local name = self.playerObj:getDisplayName()
+        local item = { username = self.playerObj:getUsername(), displayName = name }
+        self.playerList:addItem(name, item)
+    elseif Globals.isClient then
+        if not self.scoreboard then return end
+        for i = 0, self.scoreboard.usernames:size() - 1 do
+            local username    = self.scoreboard.usernames:get(i)
+            local displayName = self.scoreboard.displayNames:get(i)
+            if username ~= self.playerObj:getUsername() then
+                local item = { username = username, displayName = displayName }
+                local row  = self.playerList:addItem(displayName, item)
+                if row and username ~= displayName then
+                    row.tooltip = username
                 end
             end
         end
     end
-    return items;
 end
 
-function AdminItemSpawnerPanel:onClick(button)
-    if button.internal == "SPAWN" then
-        local items = self:parseItemsList(self.itemsEntry:getText());
-        local args = {
-            steamID = getCurrentUserSteamID(),
-            items = items,
-            x = self.selectX,
-            y = self.selectY,
-            z = self.selectZ,
-            radius = tonumber(self.radiusEntryBox:getText()) or 1,
-            spawnMode = self.spawnMode,
-            targetPlayer = self.playerList.selected > 0 and
-                self.playerList.items[self.playerList.selected].item and
-                self.playerList.items[self.playerList.selected].item.username or nil,
-        };
-        if Globals.isClient then
-            sendClientCommand(self.playerObj, "AdminItemSpawner", "SpawnItems", args);
-        else
-            AdminItemSpawner.Client.SpawnItems(self.playerObj, args);
-        end
+function AdminItemSpawnerPanel.drawPlayerListItem(list, y, item, alt)
+    local isSelected = (list.selected == item.index)
+    local bg = isSelected and C.COLORS.LIST_HIGHLIGHT
+        or (alt and C.COLORS.PANEL or C.COLORS.BACKGROUND)
+    list:drawRect(0, y, list:getWidth(), list.itemheight - 1, bg.a, bg.r, bg.g, bg.b)
+    local tc = C.COLORS.TEXT
+    list:drawText(item.text, 6, y + 3, tc.r, tc.g, tc.b, tc.a, UIFont.Small)
+    return y + list.itemheight
+end
+
+function AdminItemSpawnerPanel:onSpawnModeChanged(buttons, index)
+    local mode = (index == 1 and C.SPAWN_MODES.LOCAL)
+        or (index == 2 and C.SPAWN_MODES.GLOBAL)
+        or (index == 3 and C.SPAWN_MODES.PLAYER)
+    self.spawnMode = mode
+    local isPlayerMode = (mode == C.SPAWN_MODES.PLAYER)
+    local col = isPlayerMode and C.COLORS.PLAYER_SECTION or C.COLORS.PLAYER_SECTION_INACTIVE
+    self.lblPlayerTitle1:setColor(col.r, col.g, col.b)
+    self.lblPlayerTitle2:setColor(col.r, col.g, col.b)
+    self.playerList.borderColor = Theme.copy(col)
+    self.entryRadius:setEditable(mode == C.SPAWN_MODES.LOCAL)
+    if isPlayerMode then
+        self:populatePlayerList()
+    end
+end
+
+function AdminItemSpawnerPanel:onButtonClick(button)
+    if button.internal == "PICK_SQUARE" then
+        self.cursor = ISSelectCursor:new(self.playerObj, self, self.onSquareSelected)
+        getCell():setDrag(self.cursor, self.playerObj:getPlayerNum())
+    elseif button.internal == "SPAWN" then
+        self:doSpawn()
     elseif button.internal == "CANCEL" then
-        self:close();
+        self:close()
     end
-end
-
-function AdminItemSpawnerPanel:prerender()
-    ISPanel.prerender(self);
-
-    local radius = self:getRadius() + 1;
-    if self.marker and (self.marker:getSize() ~= radius) then
-        self.marker:setSize(radius);
-    end
-end
-
-function AdminItemSpawnerPanel:onGlobalToggled(index, selected)
-    self.isGlobal = selected;
-    self.radiusEntryBox:setEditable(not selected);
-end
-
-function AdminItemSpawnerPanel:addMarker(square, radius)
-    self.marker = getWorldMarkers():addGridSquareMarker(square, 1.0, 0.0, 0.0, true, radius);
-    self.marker:setScaleCircleTexture(true);
-end
-
-function AdminItemSpawnerPanel:onSelectSquare()
-    self.cursor = ISSelectCursor:new(self.playerObj, self, self.onSquareSelected);
-    getCell():setDrag(self.cursor, self.playerObj:getPlayerNum());
 end
 
 function AdminItemSpawnerPanel:onSquareSelected(square)
-    self:removeMarker();
-    self.selectX = square:getX();
-    self.selectY = square:getY();
-    self.selectZ = square:getZ();
-    self.coordTextLabel:setName(string.format("X: %d, Y: %d, Z: %d", self.selectX, self.selectY, self.selectZ));
-    self:addMarker(square, self:getRadius() + 1);
+    self:removeMarker()
+    self.selectX = square:getX()
+    self.selectY = square:getY()
+    self.selectZ = square:getZ()
+    self:updateCoordLabel()
+    self:addMarker(square, self:getRadius() + 1)
+end
+
+function AdminItemSpawnerPanel:parseItemsList(text)
+    local items = {}
+    for line in text:gmatch("[^\r\n]+") do
+        for entry in line:gmatch("[^;]+") do
+            entry = entry:trim()
+            if entry ~= "" then
+                local itemType, count = entry:match("([^=]+)=(%d+)")
+                if itemType then
+                    itemType = itemType:trim()
+                    count = tonumber(count)
+                    items[itemType] = (items[itemType] or 0) + count
+                else
+                    itemType = entry
+                    items[itemType] = (items[itemType] or 0) + 1
+                end
+            end
+        end
+    end
+    return items
+end
+
+function AdminItemSpawnerPanel:doSpawn()
+    local items = self:parseItemsList(self.entryItems:getText())
+    local args = {
+        steamID      = getCurrentUserSteamID(),
+        items        = items,
+        x            = self.selectX,
+        y            = self.selectY,
+        z            = self.selectZ,
+        radius       = tonumber(self.entryRadius:getText()) or 1,
+        spawnMode    = self.spawnMode,
+        targetPlayer = self.playerList.selected > 0
+            and self.playerList.items[self.playerList.selected].item
+            and self.playerList.items[self.playerList.selected].item.username or nil,
+    }
+    if Globals.isClient then
+        sendClientCommand(self.playerObj, "AdminItemSpawner", "SpawnItems", args)
+    else
+        AdminItemSpawner.Client.SpawnItems(self.playerObj, args)
+    end
 end
 
 function AdminItemSpawnerPanel:getRadius()
-    local radius = self.radiusEntryBox:getInternalText()
-    return (tonumber(radius) or 1) - 1;
+    local radius = self.entryRadius:getInternalText()
+    return (tonumber(radius) or 1) - 1
+end
+
+function AdminItemSpawnerPanel:addMarker(square, radius)
+    self.marker = getWorldMarkers():addGridSquareMarker(square, 1.0, 0.0, 0.0, true, radius)
+    self.marker:setScaleCircleTexture(true)
 end
 
 function AdminItemSpawnerPanel:removeMarker()
     if self.marker then
-        self.marker:remove();
-        self.marker = nil;
+        self.marker:remove()
+        self.marker = nil
     end
     if self.arrow then
-        self.arrow:remove();
-        self.arrow = nil;
+        self.arrow:remove()
+        self.arrow = nil
     end
 end
 
 function AdminItemSpawnerPanel:close()
-    self:removeMarker();
-    self:setVisible(false);
-    self:removeFromUIManager();
-    AdminItemSpawnerPanel.instance = nil;
+    self:removeMarker()
+    self:setVisible(false)
+    self:removeFromUIManager()
+    AdminItemSpawnerPanel.instance = nil
 end
 
 function AdminItemSpawnerPanel.onScoreboardUpdate(usernames, displayNames, steamIDs)
     if AdminItemSpawnerPanel.instance then
-        AdminItemSpawnerPanel.instance.scoreboard = {};
-        AdminItemSpawnerPanel.instance.scoreboard.usernames = usernames;
-        AdminItemSpawnerPanel.instance.scoreboard.displayNames = displayNames;
-        AdminItemSpawnerPanel.instance.scoreboard.steamIDs = steamIDs;
-        AdminItemSpawnerPanel.instance:populatePlayerList();
+        AdminItemSpawnerPanel.instance.scoreboard = {
+            usernames    = usernames,
+            displayNames = displayNames,
+            steamIDs     = steamIDs,
+        }
+        AdminItemSpawnerPanel.instance:populatePlayerList()
     end
 end
 
 AdminItemSpawnerPanel.OnMiniScoreboardUpdate = function()
     if ISMiniScoreboardUI.instance then
-        scoreboardUpdate();
+        scoreboardUpdate()
     end
 end
 
-Events.OnScoreboardUpdate.Add(AdminItemSpawnerPanel.onScoreboardUpdate);
-Events.OnMiniScoreboardUpdate.Add(AdminItemSpawnerPanel.OnMiniScoreboardUpdate);
+Events.OnScoreboardUpdate.Add(AdminItemSpawnerPanel.onScoreboardUpdate)
+Events.OnMiniScoreboardUpdate.Add(AdminItemSpawnerPanel.OnMiniScoreboardUpdate)
 
 function AdminItemSpawnerPanel.openPanel()
-    local x = getCore():getScreenWidth() / 1.5;
-    local y = getCore():getScreenHeight() / 6;
-    if AdminItemSpawnerPanel.instance == nil then
-        local window = AdminItemSpawnerPanel:new(x, y, CONST.WINDOW_WIDTH, CONST.WINDOW_HEIGHT, getPlayer(),
-            getPlayer():getSquare());
-        window:initialise();
-        window:addToUIManager();
-        AdminItemSpawnerPanel.instance = window;
-    else
-        AdminItemSpawnerPanel.instance:close();
+    if AdminItemSpawnerPanel.instance then
+        AdminItemSpawnerPanel.instance:close()
+        return
     end
+    local sw    = getCore():getScreenWidth()
+    local sh    = getCore():getScreenHeight()
+    local w     = math.min(C.DEFAULT_W, math.max(C.MIN_W, sw - 40))
+    local h     = math.min(C.DEFAULT_H, math.max(C.MIN_H, sh - 40))
+    local x     = math.max(20, math.floor((sw - w) / 2))
+    local y     = math.max(20, math.floor((sh - h) / 2))
+
+    local panel = AdminItemSpawnerPanel:new(x, y, getPlayer(), getPlayer():getSquare())
+    panel:initialise()
+    panel:addToUIManager()
+    AdminItemSpawnerPanel.instance = panel
 end
 
 local MenuDock = require("ElyonLib/UI/MenuDock/MenuDock")
 
 MenuDock.registerButton({
-    id = "admin_item_spawner",
-    title = getText("IGUI_AIS_AdminItemSpawner"),
-    icon = "media/ui/ui_icon_admin_item_spawner.png",
+    id                 = "admin_item_spawner",
+    title              = getText("IGUI_AIS_AdminItemSpawner"),
+    icon               = "media/ui/ui_icon_admin_item_spawner.png",
     minimumAccessLevel = "Admin",
-    allowSinglePlayer = true,
-    onClick = function(playerNum, entry)
-        AdminItemSpawnerPanel.openPanel();
+    allowSinglePlayer  = true,
+    onClick            = function(playerNum, entry)
+        AdminItemSpawnerPanel.openPanel()
     end,
 })

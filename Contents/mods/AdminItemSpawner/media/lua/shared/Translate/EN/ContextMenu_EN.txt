@@ -1,5 +1,0 @@
-ContextMenu_EN = {
-
-    ContextMenu_AIS_IReceived = "I received as a reward: ",
-
-}
